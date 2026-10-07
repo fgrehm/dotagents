@@ -2,7 +2,7 @@
 
 Personal agent configuration for Fabio Rehm. This is personal software for my own workflow, not a general-purpose distribution.
 
-The repo contains shared agent instructions, skills, Claude Code presentation files, and Pi settings/extensions. It is plain files plus a Bash installer; it does not require chezmoi or chezmoi-recipes.
+The repo contains shared agent instructions, skills, Claude Code presentation files, and Pi settings/extensions. It is plain files plus a Bash installer.
 
 ## Install
 
