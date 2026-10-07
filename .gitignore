@@ -1,0 +1,14 @@
+# Local build/test output
+node_modules/
+test-results/
+__pycache__/
+*.py[cod]
+
+# Local session notes and memory
+.ai/
+
+# Editor and OS
+*~
+.*.swp
+.*.swo
+.DS_Store
