@@ -109,10 +109,6 @@ migrate_legacy_payload() {
   }
 
   copy_if_missing "$HOME/.claude/statusline.sh" "$AGENTS_HOME/statusline.sh"
-  for item in "$HOME/.claude/output-styles"/*.md; do
-    [[ -e "$item" ]] || continue
-    copy_if_missing "$item" "$AGENTS_HOME/output-styles/$(basename "$item")"
-  done
   for item in "$HOME/.pi/agent/ollama-cloud.json" "$HOME/.pi/agent/web-search.json"; do
     copy_if_missing "$item" "$AGENTS_HOME/pi/$(basename "$item")"
   done
@@ -143,13 +139,53 @@ link_into_tool() {
   link_file "$src" "$dest" "$AGENTS_HOME/"
 }
 
+remove_managed_output_styles() {
+  local styles_dir="$1" style
+  for style in "$styles_dir"/navigator-v1.md "$styles_dir"/navigator-v2.md; do
+    [[ -L "$style" ]] || continue
+    if [[ "$(readlink "$style")" == "$AGENTS_HOME/output-styles/$(basename "$style")" ]]; then
+      if ((DRY_RUN)); then
+        log "REMOVE managed output style link $style"
+      else
+        rm -f -- "$style"
+        log "Removed managed output style link $style"
+      fi
+    fi
+  done
+}
+
+remove_retired_skills() {
+  local name target dest expected
+  local retired_skills=(agentifier grill-me lazychat repo-health-check ubiquitous-language)
+
+  for name in "${retired_skills[@]}"; do
+    expected="$AGENTS_HOME/skills/$name"
+    for target in "$AGENTS_HOME/skills" "$HOME/.claude/skills" "$HOME/.pi/agent/skills"; do
+      dest="$target/$name"
+      [[ -L "$dest" ]] || continue
+      if [[ "$(readlink "$dest")" == "$expected" || "$(readlink "$dest")" == "$expected/" || "$(readlink -f "$dest" 2>/dev/null || true)" == "$REPO_ROOT/agents/skills/$name" ]]; then
+        if ((DRY_RUN)); then
+          log "REMOVE managed retired skill link $dest"
+        else
+          rm -f -- "$dest"
+          log "Removed retired skill link $dest"
+        fi
+      fi
+    done
+  done
+}
+
 link_skills() {
   local skill target name
+  local retired_skill_names=' agentifier grill-me lazychat repo-health-check ubiquitous-language '
   local skills_dir="$AGENTS_HOME/skills"
   [[ -d "$skills_dir" ]] || return 0
   for skill in "$skills_dir"/*/; do
     [[ -d "$skill" ]] || continue
     name="$(basename "$skill")"
+    if [[ "$retired_skill_names" == *" $name "* ]]; then
+      continue
+    fi
     for target in "$HOME/.claude/skills" "$HOME/.pi/agent/skills"; do
       if ensure_directory "$target"; then
         link_into_tool "$skill" "$target/$name"
@@ -163,11 +199,7 @@ link_claude() {
   ensure_directory "$claude_dir" || return 0
   link_into_tool "$AGENTS_HOME/AGENTS.md" "$claude_dir/CLAUDE.md"
   link_into_tool "$AGENTS_HOME/statusline.sh" "$claude_dir/statusline.sh"
-  for style in "$AGENTS_HOME"/output-styles/*.md; do
-    [[ -e "$style" ]] || continue
-    ensure_directory "$claude_dir/output-styles" || continue
-    link_into_tool "$style" "$claude_dir/output-styles/$(basename "$style")"
-  done
+  remove_managed_output_styles "$claude_dir/output-styles"
 }
 
 link_pi() {
@@ -223,6 +255,8 @@ if ((DRY_RUN)); then
   log 'Dry run: no files will be changed; settings merges and Pi package installs are not run.'
 fi
 migrate_legacy_payload
+remove_managed_output_styles "$HOME/.claude/output-styles"
+remove_retired_skills
 link_payload
 link_claude
 link_pi
