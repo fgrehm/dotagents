@@ -1,5 +1,5 @@
 SHELL_FILES := $(shell find install.sh scripts agents \( -name "*.sh" -o -name "*.bash" \) -type f 2>/dev/null | sort)
-TS_FILES := $(shell find agents -name "*.ts" -not -path "*/extensions/subagent/*" 2>/dev/null | sort)
+TS_FILES := $(shell find agents -name "*.ts" 2>/dev/null | sort)
 
 .DEFAULT_GOAL := help
 

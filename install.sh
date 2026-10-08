@@ -154,6 +154,42 @@ remove_managed_output_styles() {
   done
 }
 
+remove_managed_subagent_links() {
+  local target name dest expected
+  local targets=("$HOME/.pi/agent/extensions/subagent" "$HOME/.pi/agent/agents")
+
+  for target in "${targets[@]}"; do
+    [[ -d "$target" ]] || continue
+    if [[ "$target" == */extensions/subagent ]]; then
+      for name in index.ts agents.ts; do
+        dest="$target/$name"
+        expected="$AGENTS_HOME/pi/extensions/subagent/$name"
+        [[ -L "$dest" && "$(readlink "$dest")" == "$expected" ]] || continue
+        if ((DRY_RUN)); then
+          log "REMOVE managed subagent link $dest"
+        else
+          rm -f -- "$dest"
+          log "Removed managed subagent link $dest"
+        fi
+      done
+      if [[ -d "$target" ]] && rmdir --ignore-fail-on-non-empty "$target" 2>/dev/null; then
+        log "Removed empty managed subagent directory $target"
+      fi
+    else
+      name=delegate.md
+      dest="$target/$name"
+      expected="$AGENTS_HOME/pi/agents/$name"
+      [[ -L "$dest" && "$(readlink "$dest")" == "$expected" ]] || continue
+      if ((DRY_RUN)); then
+        log "REMOVE managed subagent link $dest"
+      else
+        rm -f -- "$dest"
+        log "Removed managed subagent link $dest"
+      fi
+    fi
+  done
+}
+
 remove_retired_skills() {
   local name target dest expected
   local retired_skills=(agentifier grill-me lazychat repo-health-check ubiquitous-language)
@@ -203,7 +239,7 @@ link_claude() {
 }
 
 link_pi() {
-  local pi_home="$HOME/.pi/agent" ext src agent is_omarchy=0
+  local pi_home="$HOME/.pi/agent" ext
   if [[ -L "$HOME/.pi" && ! -e "$HOME/.pi" ]]; then
     log "SKIP $HOME/.pi is a broken symlink"
     return 0
@@ -226,24 +262,7 @@ link_pi() {
     done
   fi
 
-  if command -v omarchy >/dev/null 2>&1 || [[ -d "$HOME/.local/share/omarchy" ]]; then
-    is_omarchy=1
-  fi
-  if ((is_omarchy)); then
-    src="$AGENTS_HOME/pi/extensions/subagent"
-    if [[ -d "$src" ]] && ensure_directory "$pi_home/extensions/subagent"; then
-      link_into_tool "$src/index.ts" "$pi_home/extensions/subagent/index.ts"
-      link_into_tool "$src/agents.ts" "$pi_home/extensions/subagent/agents.ts"
-    fi
-    if [[ -d "$AGENTS_HOME/pi/agents" ]] && ensure_directory "$pi_home/agents"; then
-      for agent in "$AGENTS_HOME"/pi/agents/*.md; do
-        [[ -e "$agent" ]] || continue
-        link_into_tool "$agent" "$pi_home/agents/$(basename "$agent")"
-      done
-    fi
-  else
-    log "Skipping Omarchy-only Pi subagent links"
-  fi
+  remove_managed_subagent_links
 }
 
 if ! ensure_directory "$AGENTS_HOME"; then
@@ -256,6 +275,7 @@ if ((DRY_RUN)); then
 fi
 migrate_legacy_payload
 remove_managed_output_styles "$HOME/.claude/output-styles"
+remove_managed_subagent_links
 remove_retired_skills
 link_payload
 link_claude
