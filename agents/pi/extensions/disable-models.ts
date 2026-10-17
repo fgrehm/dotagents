@@ -2,18 +2,20 @@
  * Exclude models from Pi's model picker and /scoped-models.
  * Workaround for https://github.com/earendil-works/pi/issues/10167.
  *
- * /disabled-models: search and toggle models, Tab composes a regex rule,
- * Ctrl+R manages rules. Regexes match the full provider/model reference,
- * case-sensitively, without flags. Preview and confirm before saving.
+ * /disabled-models lists accessible models. Search and toggle individual entries,
+ * use Tab to compose a regex rule, or Ctrl+R to inspect and remove rules (Delete).
+ * Regexes match the full provider/model reference, case-sensitively, without flags.
+ * Preview and confirm new rules before saving.
  *
  * Config: ~/.pi/agent/disabled-models.json (PI_DISABLED_MODELS_CONFIG overrides).
  * { "models": ["provider/model", "provider/*", "bare-id"], "regex": ["^provider/.*preview"] }
  * Rules are persistent, so newly discovered matching models are excluded too.
  *
  * Limits: filters apply at session_start, not initial model selection or --list-models.
- * Guarded private registry.runtime bridges refresh availability and intercept
- * models.setProvider so exclusions survive catalog refresh/provider replacement.
- * Original providers are not mutated; session shutdown restores the store hook.
+ * The installer links this extension only on Omarchy hosts. Guarded private
+ * registry.runtime bridges refresh availability and intercept models.setProvider
+ * so exclusions survive catalog refresh/provider replacement. Original providers
+ * are not mutated; session shutdown restores the store hook.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
