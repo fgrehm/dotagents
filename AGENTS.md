@@ -4,9 +4,9 @@ Project-specific instructions for AI assistants working in this repository.
 
 ## What This Is
 
-This is Fabio Rehm's personal agent configuration. It is personal software, built for his own workflow rather than offered as a general-purpose product. The repository is licensed under MIT; see [LICENSE](LICENSE).
+This is my personal agent configuration. It is personal software, built for his own workflow rather than offered as a general-purpose product. The repository is licensed under MIT; see [LICENSE](LICENSE).
 
-This repository is plain files plus a Bash installer. It does not use chezmoi. Keep it scoped to agent configuration rather than general host configuration.
+This repository is plain files plus a Bash installer. Keep it scoped to agent configuration rather than general host configuration.
 
 ## Layout and Workflow
 
