@@ -25,6 +25,10 @@ done
 
 log() { printf '[dotagents] %s\n' "$*"; }
 
+is_omarchy() {
+  command -v omarchy >/dev/null 2>&1 || [[ -d "$HOME/.local/share/omarchy" ]]
+}
+
 ensure_directory() {
   local dir="$1"
   if [[ -L "$dir" && ! -e "$dir" ]]; then
@@ -154,6 +158,18 @@ remove_managed_output_styles() {
   done
 }
 
+remove_managed_pi_extension_link() {
+  local dest="$HOME/.pi/agent/extensions/disable-models.ts"
+  local expected="$AGENTS_HOME/pi/extensions/disable-models.ts"
+  [[ -L "$dest" && "$(readlink "$dest")" == "$expected" ]] || return 0
+  if ((DRY_RUN)); then
+    log "REMOVE managed non-Omarchy Pi extension link $dest"
+  else
+    rm -f -- "$dest"
+    log "Removed managed non-Omarchy Pi extension link $dest"
+  fi
+}
+
 remove_managed_subagent_links() {
   local target name dest expected
   local targets=("$HOME/.pi/agent/extensions/subagent" "$HOME/.pi/agent/agents")
@@ -258,6 +274,10 @@ link_pi() {
   if ensure_directory "$pi_home/extensions"; then
     for ext in "$AGENTS_HOME"/pi/extensions/*.ts; do
       [[ -e "$ext" ]] || continue
+      if [[ "$(basename "$ext")" == "disable-models.ts" ]] && ! is_omarchy; then
+        remove_managed_pi_extension_link
+        continue
+      fi
       link_into_tool "$ext" "$pi_home/extensions/$(basename "$ext")"
     done
   fi
