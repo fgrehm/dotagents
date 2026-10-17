@@ -23,7 +23,7 @@ This repository is plain files plus a Bash installer. Keep it scoped to agent co
 - Link individual files and skill directories; never replace whole tool configuration directories.
 - Preserve machine-local Pi packages/models and Claude settings while applying only the managed settings fragment.
 - Migrate legacy agent payload into `~/.agents/` only when the destination is absent.
-- Keep the Pi subagent example, `disable-models` Pi extension, and `rpiv-ask-user-question` Omarchy-only. Container/VM hosts typically use bb, which provides its own agent tooling.
+- Keep the `disable-models` Pi extension and `rpiv-ask-user-question` Omarchy-only. Container/VM hosts typically use bb, which provides its own agent tooling.
 - Third-party vendored files must be refreshed through their vendor scripts, not edited by hand.
 
 ## Style
