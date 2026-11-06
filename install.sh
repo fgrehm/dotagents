@@ -271,6 +271,21 @@ link_pi() {
   link_into_tool "$AGENTS_HOME/pi/web-search.json" "$pi_home/web-search.json"
   link_into_tool "$AGENTS_HOME/pi/sandbox.json" "$pi_home/sandbox.json"
 
+  if is_omarchy; then
+    link_file "$AGENTS_SOURCE/pi/disabled-models.json" \
+      "$pi_home/disabled-models.json" "$REPO_ROOT/agents/pi/"
+  else
+    local rules_link="$pi_home/disabled-models.json"
+    if [[ -L "$rules_link" && "$(readlink "$rules_link")" == "$REPO_ROOT/agents/pi/disabled-models.json" ]]; then
+      if ((DRY_RUN)); then
+        log "REMOVE managed non-Omarchy disabled-models link $rules_link"
+      else
+        rm -f -- "$rules_link"
+        log "Removed managed non-Omarchy disabled-models link $rules_link"
+      fi
+    fi
+  fi
+
   if ensure_directory "$pi_home/extensions"; then
     for ext in "$AGENTS_HOME"/pi/extensions/*.ts; do
       [[ -e "$ext" ]] || continue

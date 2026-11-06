@@ -1,0 +1,9 @@
+{
+  "models": [],
+  "regex": [
+    "^opencode-go/gpt.*",
+    "glm-5.2",
+    "gpt-4",
+    "gpt-5"
+  ]
+}
